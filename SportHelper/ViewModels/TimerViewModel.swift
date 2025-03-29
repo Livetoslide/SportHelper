@@ -8,6 +8,7 @@
 import Foundation
 import UIKit
 import Combine
+import AVFoundation
 
 class TimerViewModel: ObservableObject {
 	@Published var currentTime: Int = 0
@@ -18,6 +19,8 @@ class TimerViewModel: ObservableObject {
 
 	let settings: WorkoutSettings
 	var timer: AnyCancellable?
+
+	private let synthesizer = AVSpeechSynthesizer()
 
 	init(settings: WorkoutSettings) {
 		self.settings = settings
@@ -42,11 +45,15 @@ class TimerViewModel: ObservableObject {
 	}
 
 	private func tick() {
-		guard currentTime > 0 else {
+		if currentTime > 1 {
+			currentTime -= 1
+			// Во время подготовки, если осталось 5-1 секунда, озвучиваем обратный отсчет
+			if currentTime <= 5 {
+				speak(number: currentTime)
+			}
+		} else {
 			timerDidFinish()
-			return
 		}
-		currentTime -= 1
 	}
 
 	private func timerDidFinish() {
@@ -55,9 +62,11 @@ class TimerViewModel: ObservableObject {
 
 		   if isPreparing {
 			   // Фаза подготовки закончилась – начинаем работу
+			   speak(text: "Начали")
 			   isPreparing = false
 			   currentTime = settings.workTime
 		   } else if !isRest {
+			   speak(text: "Отдых")
 			   // Если сейчас была фаза работы – переключаемся на отдых
 			   // Если это последний подход и опция пропуска последнего отдыха включена, тренировка завершается
 			   if currentSet == settings.numbreOfSets && settings.skipLastRest {
@@ -67,6 +76,7 @@ class TimerViewModel: ObservableObject {
 			   currentTime = settings.restTime
 		   } else {
 			   // Фаза отдыха закончилась – переходим к следующему подходу
+			   speak(text: "Начали")
 			   currentSet += 1
 			   if currentSet > settings.numbreOfSets {
 				   // Тренировка завершена
@@ -79,6 +89,38 @@ class TimerViewModel: ObservableObject {
 		   // Запускаем таймер для новой фазы
 		   startTimer()
 	   }
+
+	private func speak(number: Int) {
+		let utterance = AVSpeechUtterance(string: "\(number)")
+		utterance.voice = AVSpeechSynthesisVoice(language: "ru-RU")
+		synthesizer.speak(utterance)
+
+		// Виброотклик для числового обратного отсчёта (легкий удар)
+		let impactGenerator = UIImpactFeedbackGenerator(style: .light)
+		impactGenerator.prepare()
+		impactGenerator.impactOccurred()
+	}
+
+	private func speak(text: String) {
+		let utterance = AVSpeechUtterance(string: text)
+		utterance.voice = AVSpeechSynthesisVoice(language: "ru-RU")
+		synthesizer.speak(utterance)
+
+		vibrateForPhrase(text: text)
+	}
+
+	//
+	private func vibrateForPhrase(text: String) {
+		let generator = UINotificationFeedbackGenerator()
+		generator.prepare()
+		if text == "Начали" {
+			generator.notificationOccurred(.success)
+		} else if text == "Отдых" {
+			generator.notificationOccurred(.warning)
+		} else {
+			generator.notificationOccurred(.error)
+		}
+	}
 
 	func formatedTime() -> String {
 		let minutes = currentTime / 60
