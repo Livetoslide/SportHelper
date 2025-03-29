@@ -96,9 +96,9 @@ class TimerViewModel: ObservableObject {
 		synthesizer.speak(utterance)
 
 		// Виброотклик для числового обратного отсчёта (легкий удар)
-		let impactGenerator = UIImpactFeedbackGenerator(style: .light)
-		impactGenerator.prepare()
-		impactGenerator.impactOccurred()
+		//let impactGenerator = UIImpactFeedbackGenerator(style: .light)
+		//impactGenerator.prepare()
+		//impactGenerator.impactOccurred()
 	}
 
 	private func speak(text: String) {
@@ -106,7 +106,7 @@ class TimerViewModel: ObservableObject {
 		utterance.voice = AVSpeechSynthesisVoice(language: "ru-RU")
 		synthesizer.speak(utterance)
 
-		vibrateForPhrase(text: text)
+		//vibrateForPhrase(text: text)
 	}
 
 	//
