@@ -12,4 +12,5 @@ struct WorkoutSettings {
 	var workTime: Int
 	var restTime: Int
 	var skipLastRest: Bool = false
+	var prepareTime: Int = 5
 }

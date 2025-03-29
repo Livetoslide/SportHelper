@@ -12,11 +12,20 @@ struct SettingsView: View {
 	@State private var sets: Int = 20
 	@State private var workTime: Int = 30
 	@State private var restTime: Int = 25
-	@State private var SkipLastRest: Bool = true;
+	@State private var SkipLastRest: Bool = true
+	@State private var prepareTime: Int = 5
 
     var body: some View {
         NavigationStack {
 			VStack(spacing: 16) {
+				HStack {
+					Text("Подготовка")
+					Spacer()
+					Stepper(value: $prepareTime, in: 1...100) {
+						Text("\(prepareTime)")
+					}
+				}
+
 				HStack {
 					Text("Подходы")
 					Spacer()
@@ -48,7 +57,8 @@ struct SettingsView: View {
 						numbreOfSets: sets,
 						workTime: workTime,
 						restTime: restTime,
-						skipLastRest: SkipLastRest
+						skipLastRest: SkipLastRest,
+						prepareTime: prepareTime
 					)
 					TimerView(settings: settings)
 				}

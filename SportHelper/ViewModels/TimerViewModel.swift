@@ -13,6 +13,7 @@ class TimerViewModel: ObservableObject {
 	@Published var currentTime: Int = 0
 	@Published var currentSet: Int = 1
 	@Published var isRest: Bool = false
+	@Published var isPreparing: Bool = true
 	@Published var isTimerRunning: Bool = false
 
 	let settings: WorkoutSettings
@@ -20,7 +21,8 @@ class TimerViewModel: ObservableObject {
 
 	init(settings: WorkoutSettings) {
 		self.settings = settings
-		self.currentTime = settings.workTime
+		self.currentTime = settings.prepareTime
+		self.isPreparing = true
 	}
 
 	func startTimer() {
@@ -48,31 +50,35 @@ class TimerViewModel: ObservableObject {
 	}
 
 	private func timerDidFinish() {
-		stopTimer()
+		   // Останавливаем таймер, чтобы обновить состояние
+		   stopTimer()
 
-		if isRest {
-			currentSet += 1
+		   if isPreparing {
+			   // Фаза подготовки закончилась – начинаем работу
+			   isPreparing = false
+			   currentTime = settings.workTime
+		   } else if !isRest {
+			   // Если сейчас была фаза работы – переключаемся на отдых
+			   // Если это последний подход и опция пропуска последнего отдыха включена, тренировка завершается
+			   if currentSet == settings.numbreOfSets && settings.skipLastRest {
+				   return
+			   }
+			   isRest = true
+			   currentTime = settings.restTime
+		   } else {
+			   // Фаза отдыха закончилась – переходим к следующему подходу
+			   currentSet += 1
+			   if currentSet > settings.numbreOfSets {
+				   // Тренировка завершена
+				   return
+			   }
+			   isRest = false
+			   currentTime = settings.workTime
+		   }
 
-			if currentSet > settings.numbreOfSets {
-				//тренировка окончена
-				return
-			}
-			isRest = false
-			currentTime = settings.workTime
-		} else {
-			//конец рабочей фазы
-			//проверка на пропуск последнего отдыха
-			if currentSet == settings.numbreOfSets, settings.skipLastRest {
-				//тренировка закончена
-				return
-			}
-			isRest = true
-			currentTime = settings.restTime
-		}
-
-		//запуск след фазы
-		startTimer()
-	}
+		   // Запускаем таймер для новой фазы
+		   startTimer()
+	   }
 
 	func formatedTime() -> String {
 		let minutes = currentTime / 60

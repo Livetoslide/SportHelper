@@ -12,19 +12,27 @@ struct TimerView: View {
 
 		ZStack {
 
-			(viewModel.isRest ? Color.red : Color.green)
-				.ignoresSafeArea()
+			// Фон меняется в зависимости от состояния:
+			// Подготовка – синий, работа – зеленый, отдых – красный.
+			if viewModel.isPreparing {
+				Color.blue.ignoresSafeArea()
+			} else {
+				(viewModel.isRest ? Color.red : Color.green)
+					.ignoresSafeArea()
+			}
 
 			VStack(spacing: 20) {
-				Text(viewModel.isRest ? "Отдых" : "Работа")
+				Text(viewModel.isPreparing ? "Подготовка" : (viewModel.isRest ? "Отдых" : "Работа"))
 					.font(.title)
 
 				Text(viewModel.formatedTime())
 					.font(.system(size: 48, weight: .bold))
 
-				Text("Подход \(viewModel.currentSet) из \(viewModel.settings.numbreOfSets)")
-					.font(.subheadline)
-
+				// Отображаем номер подхода только если не подготовка
+				if !viewModel.isPreparing {
+					Text("Подход \(viewModel.currentSet) из \(viewModel.settings.numbreOfSets)")
+						.font(.subheadline)
+				}
 				HStack(spacing: 40) {
 					Button(action: {
 						if viewModel.isTimerRunning {
