@@ -7,6 +7,25 @@
 
 import SwiftUI
 
+func timeString(from totalSeconds: Int) -> String {
+	let minutes = totalSeconds / 60
+	let seconds = totalSeconds % 60
+	return String(format: "%02d:%02d", minutes, seconds)
+}
+
+func calculateTotalTime(settings: WorkoutSettings) -> Int {
+	// Общее время работы
+	let totalWork = settings.numbreOfSets * settings.workTime
+
+	let totalRest = settings.skipLastRest
+		? (settings.numbreOfSets - 1) * settings.restTime
+		: settings.numbreOfSets * settings.restTime
+
+	//Gодготовка + работа + отдых
+	return settings.prepareTime + totalWork + totalRest
+}
+
+
 struct SettingsView: View {
 
 	@State private var sets: Int = 20
@@ -18,55 +37,81 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
 			VStack(spacing: 16) {
-				HStack {
-					Text("Подготовка")
-					Spacer()
-					Stepper(value: $prepareTime, in: 1...100) {
-						Text("\(prepareTime)")
+				// Заголовок экрана
+				Text("Быстрая тренировка")
+					.font(.title)
+					.bold()
+					.padding(.top)
+				// Если нужна "Подготовка" в том же стиле
+				CardRow(
+				     title: "ПОДГОТОВКА (сек.)",
+				     value: timeString(from: prepareTime),
+				     onMinus: { prepareTime = max(1, prepareTime - 5) },
+				     onPlus: { prepareTime += 5 }
+				 )
+
+				// Карточка: Подходы
+				CardRow(
+					title: "ПОДХОДЫ",
+					value: "\(sets)",
+					onMinus: {
+						sets = max(1, sets - 1)
+					},
+					onPlus: {
+						sets += 1
 					}
-				}
+				)
 
-				HStack {
-					Text("Подходы")
-					Spacer()
-					Stepper(value: $sets, in: 1...100) {
-						Text("\(sets)")
+				// Карточка: Работа
+				CardRow(
+					title: "РАБОТА (сек.)",
+					value: timeString(from: workTime),
+					onMinus: {
+						// шаг 5 секунд, или 1 — как тебе удобнее
+						workTime = max(1, workTime - 5)
+					},
+					onPlus: {
+						workTime += 5
 					}
-				}
+				)
 
-				HStack {
-					Text("Работа (сек.)")
-					Spacer()
-					Stepper(value: $workTime, in: 1...600) {
-						Text("\(workTime)")
+				// Карточка: Отдых
+				CardRow(
+					title: "ОТДЫХ (сек.)",
+					value: timeString(from: restTime),
+					onMinus: {
+						restTime = max(1, restTime - 5)
+					},
+					onPlus: {
+						restTime += 5
 					}
-				}
+				)
 
-				HStack {
-					Text("Отдых (сек.)")
-					Spacer()
-					Stepper(value: $restTime, in: 1...600) {
-						Text("\(restTime)")
-					}
-				}
+				// 4) Переключатель
+				CardToggleRow(title: "Пропускать последний отдых", isOn: $SkipLastRest)
 
-				Toggle("Пропускать последний отдых", isOn : $SkipLastRest)
+				Spacer()
 
-				NavigationLink("Начать Тренировку") {
-					let settings = WorkoutSettings(
-						numbreOfSets: sets,
-						workTime: workTime,
-						restTime: restTime,
-						skipLastRest: SkipLastRest,
-						prepareTime: prepareTime
+
+				let settings = WorkoutSettings(
+					numbreOfSets: sets,
+					workTime: workTime,
+					restTime: restTime,
+					skipLastRest: SkipLastRest,
+					prepareTime: prepareTime
+				)
+
+				NavigationLink(
+					destination: TimerView(settings: settings)
+				) {
+					StartWorkoutButton(
+						totalTime: calculateTotalTime(settings: settings)
 					)
-					TimerView(settings: settings)
 				}
-				.padding()
-				.buttonStyle(.borderedProminent)
+				.padding(.bottom, 8)
+
 			}
 			.padding()
-			.navigationTitle("Быстрая тренировка")
 		}
     }
 }
