@@ -26,7 +26,7 @@ struct TimerView: View {
 					.font(.title)
 
 				Text(viewModel.formatedTime())
-					.font(.system(size: 48, weight: .bold))
+					.font(.system(size: 62, weight: .bold))
 
 				// Отображаем номер подхода только если не подготовка
 				if !viewModel.isPreparing {
