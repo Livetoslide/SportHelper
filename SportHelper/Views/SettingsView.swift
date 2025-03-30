@@ -46,7 +46,7 @@ struct SettingsView: View {
 				CardRow(
 				     title: "ПОДГОТОВКА (сек.)",
 				     value: timeString(from: prepareTime),
-				     onMinus: { prepareTime = max(1, prepareTime - 5) },
+				     onMinus: { prepareTime = max(5, prepareTime - 5) },
 				     onPlus: { prepareTime += 5 }
 				 )
 
@@ -68,7 +68,7 @@ struct SettingsView: View {
 					value: timeString(from: workTime),
 					onMinus: {
 						// шаг 5 секунд, или 1 — как тебе удобнее
-						workTime = max(1, workTime - 5)
+						workTime = max(5, workTime - 5)
 					},
 					onPlus: {
 						workTime += 5
@@ -80,7 +80,7 @@ struct SettingsView: View {
 					title: "ОТДЫХ (сек.)",
 					value: timeString(from: restTime),
 					onMinus: {
-						restTime = max(1, restTime - 5)
+						restTime = max(5, restTime - 5)
 					},
 					onPlus: {
 						restTime += 5
