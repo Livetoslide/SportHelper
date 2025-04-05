@@ -125,6 +125,68 @@ class TimerViewModel: ObservableObject {
 		}
 	}
 
+	// Переход к следующему этапу по кнопке "Вперёд"
+	func goToNextPhase() {
+		stopTimer()
+		if isPreparing {
+			// Из подготовки сразу переходим в работу первого подхода
+			speak(text: "Начали")
+			isPreparing = false
+			currentTime = Double(settings.workTime)
+		} else if !isRest {
+			// Если в рабочей фазе, то переход в отдых, если он предусмотрен
+			if currentSet == settings.numbreOfSets && settings.skipLastRest {
+				// Если это последний подход и отдых пропускается, оставляем работу
+				// Можно не менять фазу или завершать тренировку
+				return
+			} else {
+				speak(text: "Отдых")
+				isRest = true
+				currentTime = Double(settings.restTime)
+			}
+		} else {
+			// Если в фазе отдыха, переходим к работе следующего подхода
+			speak(text: "Начали")
+			currentSet += 1
+			if currentSet > settings.numbreOfSets {
+				return
+			}
+			isRest = false
+			currentTime = Double(settings.workTime)
+		}
+		startTimer()
+	}
+
+	// Переход к предыдущему этапу по кнопке "Назад"
+	func goToPreviousPhase() {
+		stopTimer()
+		if isPreparing {
+			// Если в подготовке, ничего не делаем (нет предыдущей фазы)
+			// Или можно оставить подготовку без изменений
+			return
+		} else if !isRest {
+			// Если в рабочей фазе
+			if currentSet == 1 {
+				// Если это первая рабочая фаза, предыдущий этап – подготовка
+				isPreparing = true
+				currentTime = Double(settings.prepareTime)
+				speak(text: "Подготовка")
+			} else {
+				// Если не первая рабочая фаза, предыдущий этап – отдых предыдущего подхода
+				currentSet -= 1
+				isRest = true
+				currentTime = Double(settings.restTime)
+				speak(text: "Отдых")
+			}
+		} else {
+			// Если в отдыхе, предыдущий этап – работа той же фазы (без изменения номера подхода)
+			isRest = false
+			currentTime = Double(settings.workTime)
+			speak(text: "Начали")
+		}
+		startTimer()
+	}
+
 	func formatedTime() -> String {
 		let total = Int(ceil(currentTime))
 		let minutes = total / 60

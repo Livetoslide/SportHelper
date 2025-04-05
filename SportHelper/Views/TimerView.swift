@@ -55,14 +55,22 @@ struct TimerView: View {
 
 				Spacer()
 
-				TimerControlsView(isTimerRunning: $viewModel.isTimerRunning,
-				onPauseResumeTap: {
-					if viewModel.isTimerRunning {
-						viewModel.stopTimer()
-					} else {
-						viewModel.startTimer()
+				TimerControlsView(
+					isTimerRunning: $viewModel.isTimerRunning,
+					onPauseResumeTap: {
+						if viewModel.isTimerRunning {
+							viewModel.stopTimer()
+						} else {
+							viewModel.startTimer()
+						}
+					},
+					onBackTap: {
+						viewModel.goToPreviousPhase()
+					},
+					onForwardTap: {
+						viewModel.goToNextPhase()
 					}
-				})
+				)
 			}
 			.padding()
 		}

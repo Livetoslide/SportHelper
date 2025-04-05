@@ -20,14 +20,27 @@ struct PressDownButtonStyle: ButtonStyle {
 struct TimerControlsView: View {
 	@Binding var isTimerRunning: Bool
 	var onPauseResumeTap: () -> Void
+	var onBackTap: () -> Void
+	var onForwardTap: () -> Void
 
 	var body: some View {
 		HStack {
+			// Кнопка "Назад"
+			Button(action: onBackTap) {
+				Image(systemName: "backward.fill")
+					.font(.title2)
+					.foregroundColor(.white)
+					.frame(width: 50, height: 50)
+					.background(Color.black.opacity(0.7))
+					.cornerRadius(25)
+			}
+
 			Spacer()
+
+			// Центральная кнопка "Пауза/Продолжить" с фиксированной шириной текста (как раньше)
 			Button(action: onPauseResumeTap) {
 				HStack(spacing: 8) {
 					Image(systemName: isTimerRunning ? "pause.fill" : "play.fill")
-					// Оборачиваем текст в ZStack с невидимым "Продолжить" для фиксированной ширины
 					ZStack {
 						Text(isTimerRunning ? "Пауза" : "Продолжить")
 						Text("Продолжить")
@@ -42,7 +55,18 @@ struct TimerControlsView: View {
 				.cornerRadius(12)
 			}
 			.buttonStyle(PressDownButtonStyle())
+
 			Spacer()
+
+			// Кнопка "Вперёд"
+			Button(action: onForwardTap) {
+				Image(systemName: "forward.fill")
+					.font(.title2)
+					.foregroundColor(.white)
+					.frame(width: 50, height: 50)
+					.background(Color.black.opacity(0.7))
+					.cornerRadius(25)
+			}
 		}
 		.padding()
 	}
