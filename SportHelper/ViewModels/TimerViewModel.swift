@@ -16,6 +16,7 @@ class TimerViewModel: ObservableObject {
 	@Published var isRest: Bool = false
 	@Published var isPreparing: Bool = true
 	@Published var isTimerRunning: Bool = false
+	@Published var workoutFinished: Bool = false
 
 	let settings: WorkoutSettings
 	var timer: AnyCancellable?
@@ -59,6 +60,12 @@ class TimerViewModel: ObservableObject {
 		}
 	}
 
+	private func finishWorkout() {
+		// Завершаем тренировку: останавливаем таймер и устанавливаем флаг
+		stopTimer()
+		workoutFinished = true
+	}
+
 	private func timerDidFinish() {
 		   // Останавливаем таймер, чтобы обновить состояние
 		   stopTimer()
@@ -69,20 +76,21 @@ class TimerViewModel: ObservableObject {
 			   isPreparing = false
 			   currentTime = Double(settings.workTime)
 		   } else if !isRest {
-			   speak(text: "Отдых")
-			   // Если сейчас была фаза работы – переключаемся на отдых
-			   // Если это последний подход и опция пропуска последнего отдыха включена, тренировка завершается
 			   if currentSet == settings.numbreOfSets && settings.skipLastRest {
+				   finishWorkout()
 				   return
+			   } else {
+				   speak(text: "Отдых")
+				   isRest = true
+				   currentTime = Double(settings.restTime)
 			   }
-			   isRest = true
-			   currentTime = Double(settings.restTime)
 		   } else {
 			   // Фаза отдыха закончилась – переходим к следующему подходу
 			   speak(text: "Начали")
 			   currentSet += 1
 			   if currentSet > settings.numbreOfSets {
 				   // Тренировка завершена
+				   finishWorkout()
 				   return
 			   }
 			   isRest = false

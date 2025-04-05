@@ -14,7 +14,7 @@ struct TimerView: View {
 			// Фон меняется в зависимости от состояния:
 			// Подготовка – синий, работа – зеленый, отдых – красный.
 			let baseColor = viewModel.isPreparing ? Color.blue :
-							(viewModel.isRest ? Color.red : Color.green)
+			(viewModel.isRest ? Color.red : Color.green)
 			baseColor
 				.brightness(-0.2)
 				.ignoresSafeArea()
@@ -41,38 +41,44 @@ struct TimerView: View {
 				.ignoresSafeArea()
 			}
 
-			VStack(spacing: 20) {
+			if viewModel.workoutFinished {
+				FinishView()
+					.transition(.opacity)
 
-				Spacer()
+			} else {
+				VStack(spacing: 20) {
 
-				Text(viewModel.isPreparing ? "ПОДГОТОВКА" : (viewModel.isRest ? "ОТДЫХ \(viewModel.currentSet) / \(viewModel.settings.numbreOfSets)" : "РАБОТА \(viewModel.currentSet) / \(viewModel.settings.numbreOfSets)"))
-					.font(.title)
-					.colorInvert()
+					Spacer()
 
-				Text(viewModel.formatedTime())
-					.font(.system(size: 98, weight: .bold))
-					.colorInvert()
+					Text(viewModel.isPreparing ? "ПОДГОТОВКА" : (viewModel.isRest ? "ОТДЫХ \(viewModel.currentSet) / \(viewModel.settings.numbreOfSets)" : "РАБОТА \(viewModel.currentSet) / \(viewModel.settings.numbreOfSets)"))
+						.font(.title)
+						.colorInvert()
 
-				Spacer()
+					Text(viewModel.formatedTime())
+						.font(.system(size: 98, weight: .bold))
+						.colorInvert()
 
-				TimerControlsView(
-					isTimerRunning: $viewModel.isTimerRunning,
-					onPauseResumeTap: {
-						if viewModel.isTimerRunning {
-							viewModel.stopTimer()
-						} else {
-							viewModel.startTimer()
+					Spacer()
+
+					TimerControlsView(
+						isTimerRunning: $viewModel.isTimerRunning,
+						onPauseResumeTap: {
+							if viewModel.isTimerRunning {
+								viewModel.stopTimer()
+							} else {
+								viewModel.startTimer()
+							}
+						},
+						onBackTap: {
+							viewModel.goToPreviousPhase()
+						},
+						onForwardTap: {
+							viewModel.goToNextPhase()
 						}
-					},
-					onBackTap: {
-						viewModel.goToPreviousPhase()
-					},
-					onForwardTap: {
-						viewModel.goToNextPhase()
-					}
-				)
+					)
+				}
+				.padding()
 			}
-			.padding()
 		}
 		.onAppear {
 			viewModel.startTimer()
@@ -82,6 +88,7 @@ struct TimerView: View {
 		}
 		.navigationTitle("Таймер")
 	}
+		
 
 	private func currentPhaseTotalSeconds() -> Double {
 		if viewModel.isPreparing {
