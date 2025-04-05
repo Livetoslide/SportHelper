@@ -45,17 +45,14 @@ struct TimerView: View {
 
 				Spacer()
 
-				Text(viewModel.isPreparing ? "Подготовка" : (viewModel.isRest ? "Отдых" : "Работа"))
+				Text(viewModel.isPreparing ? "ПОДГОТОВКА" : (viewModel.isRest ? "ОТДЫХ \(viewModel.currentSet) / \(viewModel.settings.numbreOfSets)" : "РАБОТА \(viewModel.currentSet) / \(viewModel.settings.numbreOfSets)"))
 					.font(.title)
+					.colorInvert()
 
 				Text(viewModel.formatedTime())
-					.font(.system(size: 62, weight: .bold))
+					.font(.system(size: 98, weight: .bold))
+					.colorInvert()
 
-				// Отображаем номер подхода только если не подготовка
-				if !viewModel.isPreparing {
-					Text("Подход \(viewModel.currentSet) из \(viewModel.settings.numbreOfSets)")
-						.font(.subheadline)
-				}
 				Spacer()
 
 				TimerControlsView(isTimerRunning: $viewModel.isTimerRunning,
