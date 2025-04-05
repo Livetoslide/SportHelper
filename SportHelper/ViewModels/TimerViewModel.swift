@@ -11,7 +11,7 @@ import Combine
 import AVFoundation
 
 class TimerViewModel: ObservableObject {
-	@Published var currentTime: Int = 0
+	@Published var currentTime: Double
 	@Published var currentSet: Int = 1
 	@Published var isRest: Bool = false
 	@Published var isPreparing: Bool = true
@@ -24,14 +24,14 @@ class TimerViewModel: ObservableObject {
 
 	init(settings: WorkoutSettings) {
 		self.settings = settings
-		self.currentTime = settings.prepareTime
+		self.currentTime = Double(settings.prepareTime)
 		self.isPreparing = true
 	}
 
 	func startTimer() {
 		stopTimer()
 		isTimerRunning = true
-		timer = Timer.publish(every: 1, on: .main, in: .common)
+		timer = Timer.publish(every: 0.1 , on: .main, in: .common)
 			.autoconnect()
 			.sink { [weak self] _ in
 				self?.tick()
@@ -45,11 +45,14 @@ class TimerViewModel: ObservableObject {
 	}
 
 	private func tick() {
-		if currentTime > 1 {
-			currentTime -= 1
-			// Во время подготовки, если осталось 5-1 секунда, озвучиваем обратный отсчет
-			if currentTime <= 5 {
-				speak(number: currentTime)
+		if currentTime > 0.1 {
+			currentTime -= 0.1
+			// Если мы в подготовке и осталось менее 5 секунд, озвучиваем целые секунды при переходе границы
+			if isPreparing {
+				let remaining = Int(ceil(currentTime))
+				if remaining <= 5 && Double(remaining) - currentTime < 0.1 {
+					speak(number: remaining)
+				}
 			}
 		} else {
 			timerDidFinish()
@@ -64,7 +67,7 @@ class TimerViewModel: ObservableObject {
 			   // Фаза подготовки закончилась – начинаем работу
 			   speak(text: "Начали")
 			   isPreparing = false
-			   currentTime = settings.workTime
+			   currentTime = Double(settings.workTime)
 		   } else if !isRest {
 			   speak(text: "Отдых")
 			   // Если сейчас была фаза работы – переключаемся на отдых
@@ -73,7 +76,7 @@ class TimerViewModel: ObservableObject {
 				   return
 			   }
 			   isRest = true
-			   currentTime = settings.restTime
+			   currentTime = Double(settings.restTime)
 		   } else {
 			   // Фаза отдыха закончилась – переходим к следующему подходу
 			   speak(text: "Начали")
@@ -83,7 +86,7 @@ class TimerViewModel: ObservableObject {
 				   return
 			   }
 			   isRest = false
-			   currentTime = settings.workTime
+			   currentTime = Double(settings.workTime)
 		   }
 
 		   // Запускаем таймер для новой фазы
@@ -123,8 +126,9 @@ class TimerViewModel: ObservableObject {
 	}
 
 	func formatedTime() -> String {
-		let minutes = currentTime / 60
-		let seconds = currentTime % 60
+		let total = Int(ceil(currentTime))
+		let minutes = total / 60
+		let seconds = total % 60
 		return String(format: "%02d:%02d", minutes, seconds)
 	}
 

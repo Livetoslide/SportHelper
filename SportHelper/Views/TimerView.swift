@@ -11,14 +11,34 @@ struct TimerView: View {
 	var body: some View {
 
 		ZStack {
-
 			// Фон меняется в зависимости от состояния:
 			// Подготовка – синий, работа – зеленый, отдых – красный.
-			if viewModel.isPreparing {
-				Color.blue.ignoresSafeArea()
-			} else {
-				(viewModel.isRest ? Color.red : Color.green)
-					.ignoresSafeArea()
+			let baseColor = viewModel.isPreparing ? Color.blue :
+							(viewModel.isRest ? Color.red : Color.green)
+			baseColor
+				.brightness(-0.2)
+				.ignoresSafeArea()
+
+			// Второй слой
+			GeometryReader { geometry in
+
+				let fullHeight = UIScreen.main.bounds.height
+
+				let totalSeconds = currentPhaseTotalSeconds()
+				// Сколько времени прошло в текущей фазе
+				let elapsed = totalSeconds - viewModel.currentTime
+				// Доля прогресса
+				let progressRatio = CGFloat(elapsed) / CGFloat(totalSeconds)
+
+				VStack(spacing: 0) {
+					Spacer(minLength: 0)
+
+					Rectangle()
+						.fill(baseColor).brightness(-0.15)
+						.frame(height: fullHeight * progressRatio)
+						.animation(.linear(duration: 0.1), value: progressRatio)
+				}
+				.ignoresSafeArea()
 			}
 
 			VStack(spacing: 20) {
@@ -64,5 +84,17 @@ struct TimerView: View {
 		}
 		.navigationTitle("Таймер")
 	}
+
+	private func currentPhaseTotalSeconds() -> Double {
+		if viewModel.isPreparing {
+			return Double(viewModel.settings.prepareTime)
+		} else if viewModel.isRest {
+			return Double(viewModel.settings.restTime)
+		} else {
+			return Double(viewModel.settings.workTime)
+		}
+	}
 }
+
+
 
