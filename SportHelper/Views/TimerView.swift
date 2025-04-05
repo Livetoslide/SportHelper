@@ -42,6 +42,9 @@ struct TimerView: View {
 			}
 
 			VStack(spacing: 20) {
+
+				Spacer()
+
 				Text(viewModel.isPreparing ? "Подготовка" : (viewModel.isRest ? "Отдых" : "Работа"))
 					.font(.title)
 
@@ -53,26 +56,16 @@ struct TimerView: View {
 					Text("Подход \(viewModel.currentSet) из \(viewModel.settings.numbreOfSets)")
 						.font(.subheadline)
 				}
-				HStack(spacing: 40) {
-					Button(action: {
-						if viewModel.isTimerRunning {
-							viewModel.stopTimer()
-						} else {
-							viewModel.startTimer()
-						}
-					}) {
-						Text(viewModel.isTimerRunning ? "Пауза" : "Продолжить")
-					}
-					.buttonStyle(.borderedProminent)
+				Spacer()
 
-					Button(action: {
+				TimerControlsView(isTimerRunning: $viewModel.isTimerRunning,
+				onPauseResumeTap: {
+					if viewModel.isTimerRunning {
 						viewModel.stopTimer()
-						dismiss()
-					}) {
-						Text("Завершить")
+					} else {
+						viewModel.startTimer()
 					}
-					.buttonStyle(.borderedProminent)
-				}
+				})
 			}
 			.padding()
 		}
